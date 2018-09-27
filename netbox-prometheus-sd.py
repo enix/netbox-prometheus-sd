@@ -22,6 +22,10 @@ def main(args):
         if device.custom_fields.get('prom_modules'):
             device_prom_port = device.custom_fields.get('prom_port', DEFAULT_PROM_PORT)
             labels = {'name': device.name}
+            if device.tenant:
+                labels['tenant'] = device.tenant.slug
+                if device.tenant.group:
+                    labels['tenant_group'] = device.tenant.group.slug
             if device.cluster:
                 labels['nb_cluster'] = device.cluster.name
             if device.asset_tag:
