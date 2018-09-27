@@ -1,0 +1,19 @@
+image: docker:latest
+
+# When using dind, it's wise to use the overlayfs driver for
+# improved performance.
+variables:
+  DOCKER_DRIVER: overlay2
+
+services:
+- docker:dind
+
+before_script:
+- docker info
+
+build:
+  stage: build
+  script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN docker-registry.enix.org
+  - docker build -t docker-registry.enix.org/docker/netbox-prometheus-sd .
+  - docker push docker-registry.enix.org/docker/netbox-prometheus-sd:latest
