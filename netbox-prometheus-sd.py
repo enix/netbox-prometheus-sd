@@ -3,6 +3,7 @@
 import sys
 import json
 import argparse
+import itertools
 
 import pynetbox
 
@@ -17,8 +18,9 @@ def main(args):
     # Filter out devices without primary IP address as it is a requirement
     # to be polled by Prometheus
     devices = netbox.dcim.devices.filter(has_primary_ip=True)
+    vm = netbox.virtualization.virtual_machines.filter(has_primary_ip=True)
 
-    for device in devices:
+    for device in itertools.chain(devices, vm):
         if device.custom_fields.get('prom_modules'):
             device_prom_port = device.custom_fields.get('prom_port', DEFAULT_PROM_PORT)
             labels = {'name': device.name}
@@ -26,21 +28,21 @@ def main(args):
                 labels['tenant'] = device.tenant.slug
                 if device.tenant.group:
                     labels['tenant_group'] = device.tenant.group.slug
-            if device.cluster:
+            if getattr(device, 'cluster', None):
                 labels['nb_cluster'] = device.cluster.name
-            if device.asset_tag:
+            if getattr(device, 'asset_tag', None):
                 labels['nb_asset_tag'] = device.asset_tag
-            if device.device_role:
+            if getattr(device, 'device_role', None):
                 labels['nb_role'] = device.device_role.slug
-            if device.device_type:
+            if getattr(device, 'device_type', None):
                 labels['nb_type'] = device.device_type.model
-            if device.rack:
+            if getattr(device, 'rack', None):
                 labels['nb_rack'] = device.rack.name
-            if device.site:
+            if getattr(device, 'site', None):
                 labels['nb_pop'] = device.site.slug
-            if device.serial:
+            if getattr(device, 'serial', None):
                 labels['nb_serial'] = device.serial
-            if device.parent_device:
+            if getattr(device, 'parent_device', None):
                 labels['nb_parent'] = device.parent_device.name
 
             for module in device.custom_fields['prom_modules'].split():
