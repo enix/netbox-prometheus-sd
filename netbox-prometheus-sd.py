@@ -8,9 +8,6 @@ import itertools
 import pynetbox
 
 
-DEFAULT_PROM_PORT = '10000'
-
-
 def main(args):
     targets = []
     netbox = pynetbox.api(args.url, token=args.token)
@@ -21,34 +18,44 @@ def main(args):
     vm = netbox.virtualization.virtual_machines.filter(has_primary_ip=True)
 
     for device in itertools.chain(devices, vm):
-        if device.custom_fields.get('prom_modules'):
-            device_prom_port = device.custom_fields.get('prom_port', DEFAULT_PROM_PORT)
-            labels = {'name': device.name}
+        if device.custom_fields.get('prom_labels'):
+            labels = {'__meta_netbox_name': device.name,
+                      '__meta_netbox_port': args.port}
             if device.tenant:
-                labels['tenant'] = device.tenant.slug
+                labels['__meta_netbox_tenant'] = device.tenant.slug
                 if device.tenant.group:
-                    labels['tenant_group'] = device.tenant.group.slug
+                    labels['__meta_netbox_tenant_group'] = device.tenant.group.slug
             if getattr(device, 'cluster', None):
-                labels['nb_cluster'] = device.cluster.name
+                labels['__meta_netbox_cluster'] = device.cluster.name
             if getattr(device, 'asset_tag', None):
-                labels['nb_asset_tag'] = device.asset_tag
+                labels['__meta_netbox_asset_tag'] = device.asset_tag
             if getattr(device, 'device_role', None):
-                labels['nb_role'] = device.device_role.slug
+                labels['__meta_netbox_role'] = device.device_role.slug
             if getattr(device, 'device_type', None):
-                labels['nb_type'] = device.device_type.model
+                labels['__meta_netbox_type'] = device.device_type.model
             if getattr(device, 'rack', None):
-                labels['nb_rack'] = device.rack.name
+                labels['__meta_netbox_rack'] = device.rack.name
             if getattr(device, 'site', None):
-                labels['nb_pop'] = device.site.slug
+                labels['__meta_netbox_pop'] = device.site.slug
             if getattr(device, 'serial', None):
-                labels['nb_serial'] = device.serial
+                labels['__meta_netbox_serial'] = device.serial
             if getattr(device, 'parent_device', None):
-                labels['nb_parent'] = device.parent_device.name
+                labels['__meta_netbox_parent'] = device.parent_device.name
 
-            for module in device.custom_fields['prom_modules'].split():
-                labels['__param_module'] = module
-                targets.append({'targets': ['%s:%s' % (str(device.primary_ip.address.ip), device_prom_port)],
-                                'labels': labels.copy()})
+            try:
+                device_targets = json.loads(device.custom_fields['prom_labels'])
+            except ValueError:
+                continue  # Ignore errors while decoding the target json FIXME: logging
+
+            if not isinstance(device_targets, list):
+                device_targets = [device_targets]
+
+            for target in device_targets:
+                target_labels = labels.copy()
+                target_labels.update(target)
+                targets.append({'targets': ['%s:%s' % (str(device.primary_ip.address.ip),
+                                                       target_labels['__meta_netbox_port'])],
+                                'labels': target_labels})
 
     if args.output == '-':
         output = sys.stdout
@@ -57,11 +64,15 @@ def main(args):
 
     json.dump(targets, output, indent=4)
 
-    output.close()
+    output.close()Z
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port', default=10000,
+                        help='Default target port; Can be overridden using the __meta_netbox_port label')
+    parser.add_argument('-f', '--custom-field', default='prom_labels',
+                        help='Netbox custom field to use to get the target labels')
     parser.add_argument('url', help='URL to Netbox')
     parser.add_argument('token', help='Authentication Token')
     parser.add_argument('output', help='Output file')
