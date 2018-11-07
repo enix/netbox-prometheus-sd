@@ -18,7 +18,7 @@ def main(args):
     vm = netbox.virtualization.virtual_machines.filter(has_primary_ip=True)
 
     for device in itertools.chain(devices, vm):
-        if device.custom_fields.get('prom_labels'):
+        if device.custom_fields.get(args.custom_field):
             labels = {'__meta_netbox_name': device.name,
                       '__meta_netbox_port': args.port}
             if device.tenant:
@@ -43,7 +43,7 @@ def main(args):
                 labels['__meta_netbox_parent'] = device.parent_device.name
 
             try:
-                device_targets = json.loads(device.custom_fields['prom_labels'])
+                device_targets = json.loads(device.custom_fields[args.custom_field])
             except ValueError:
                 continue  # Ignore errors while decoding the target json FIXME: logging
 
