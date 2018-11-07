@@ -37,7 +37,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -p PORT, --port PORT  Default target port; Can be overridden using the
-                        __meta_netbox_port label
+                        __port__ label
   -f CUSTOM_FIELD, --custom-field CUSTOM_FIELD
                         Netbox custom field to use to get the target labels
 ```
@@ -49,7 +49,7 @@ to an output file.
 Optionally, you can customize the custom field used to get target labels in Netbox
 using the `--custom-field` option. You can also customize the default port on which
 the target will point to using the `--port` option. Note that this port can be customized
-per target using the `__meta_netbox_port` label set in the custom field.
+per target using the `__port__` label set in the custom field.
 
 The output will be generated in the file pointed by the `output` argument.
 

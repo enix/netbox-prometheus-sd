@@ -20,7 +20,7 @@ def main(args):
     for device in itertools.chain(devices, vm):
         if device.custom_fields.get(args.custom_field):
             labels = {'__meta_netbox_name': device.name,
-                      '__meta_netbox_port': str(args.port)}
+                      '__port__': str(args.port)}
             if device.tenant:
                 labels['__meta_netbox_tenant'] = device.tenant.slug
                 if device.tenant.group:
@@ -54,7 +54,7 @@ def main(args):
                 target_labels = labels.copy()
                 target_labels.update(target)
                 targets.append({'targets': ['%s:%s' % (str(device.primary_ip.address.ip),
-                                                       target_labels['__meta_netbox_port'])],
+                                                       target_labels['__port__'])],
                                 'labels': target_labels})
 
     if args.output == '-':
@@ -70,7 +70,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', default=10000,
-                        help='Default target port; Can be overridden using the __meta_netbox_port label')
+                        help='Default target port; Can be overridden using the __port__ label')
     parser.add_argument('-f', '--custom-field', default='prom_labels',
                         help='Netbox custom field to use to get the target labels')
     parser.add_argument('url', help='URL to Netbox')
