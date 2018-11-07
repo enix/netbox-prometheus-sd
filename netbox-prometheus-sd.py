@@ -20,7 +20,7 @@ def main(args):
     for device in itertools.chain(devices, vm):
         if device.custom_fields.get(args.custom_field):
             labels = {'__meta_netbox_name': device.name,
-                      '__meta_netbox_port': args.port}
+                      '__meta_netbox_port': str(args.port)}
             if device.tenant:
                 labels['__meta_netbox_tenant'] = device.tenant.slug
                 if device.tenant.group:
