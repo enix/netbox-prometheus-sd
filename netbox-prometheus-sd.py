@@ -64,7 +64,7 @@ def main(args):
 
     json.dump(targets, output, indent=4)
 
-    output.close()Z
+    output.close()
 
 
 if __name__ == '__main__':
