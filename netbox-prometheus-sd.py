@@ -4,6 +4,7 @@ import sys
 import json
 import argparse
 import itertools
+import netaddr
 
 import pynetbox
 
@@ -53,7 +54,7 @@ def main(args):
             for target in device_targets:
                 target_labels = labels.copy()
                 target_labels.update(target)
-                targets.append({'targets': ['%s:%s' % (str(device.primary_ip.address.ip),
+                targets.append({'targets': ['%s:%s' % (str(netaddr.IPNetwork(device.primary_ip.address).ip),
                                                        target_labels['__port__'])],
                                 'labels': target_labels})
 
