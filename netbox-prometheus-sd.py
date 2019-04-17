@@ -48,7 +48,8 @@ def main(args):
                 labels['__meta_netbox_parent'] = device.parent_device.name
             if getattr(device, 'address', None):
                 labels['__meta_netbox_address'] = device.address
-
+            if getattr(device, 'description', None):
+                labels['__meta_netbox_description'] = device.description
             try:
                 device_targets = json.loads(device.custom_fields[args.custom_field])
             except ValueError:
