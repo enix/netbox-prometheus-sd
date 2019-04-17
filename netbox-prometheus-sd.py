@@ -17,8 +17,9 @@ def main(args):
     # to be polled by Prometheus
     devices = netbox.dcim.devices.filter(has_primary_ip=True)
     vm = netbox.virtualization.virtual_machines.filter(has_primary_ip=True)
+    ips = netbox.ipam.ip_addresses.filter(**{'cf_%s' % args.custom_field: '{'})
 
-    for device in itertools.chain(devices, vm):
+    for device in itertools.chain(devices, vm, ips):
         if device.custom_fields.get(args.custom_field):
             labels = {'__port__': str(args.port)}
             if getattr(device, 'name', None):
@@ -45,6 +46,8 @@ def main(args):
                 labels['__meta_netbox_serial'] = device.serial
             if getattr(device, 'parent_device', None):
                 labels['__meta_netbox_parent'] = device.parent_device.name
+            if getattr(device, 'address', None):
+                labels['__meta_netbox_address'] = device.address
 
             try:
                 device_targets = json.loads(device.custom_fields[args.custom_field])
@@ -57,7 +60,11 @@ def main(args):
             for target in device_targets:
                 target_labels = labels.copy()
                 target_labels.update(target)
-                targets.append({'targets': ['%s:%s' % (str(netaddr.IPNetwork(device.primary_ip.address).ip),
+                if hasattr(device, 'primary_ip'):
+                    address = device.primary_ip
+                else:
+                    address = device
+                targets.append({'targets': ['%s:%s' % (str(netaddr.IPNetwork(address.address).ip),
                                                        target_labels['__port__'])],
                                 'labels': target_labels})
 
