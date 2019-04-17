@@ -23,6 +23,8 @@ def main(args):
             labels = {'__port__': str(args.port)}
             if getattr(device, 'name', None):
                 labels['__meta_netbox_name'] = device.name
+            else:
+                labels['__meta_netbox_name'] = repr(device)
             if device.tenant:
                 labels['__meta_netbox_tenant'] = device.tenant.slug
                 if device.tenant.group:
