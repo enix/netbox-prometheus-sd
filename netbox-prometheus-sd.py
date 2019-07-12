@@ -75,6 +75,7 @@ def main(args):
         output = open(args.output, 'w')
 
     json.dump(targets, output, indent=4)
+    output.write('\n')
 
     output.close()
 
