@@ -1,10 +1,11 @@
-FROM ubuntu:bionic
-MAINTAINER Antoine Millet <antoine.millet@enix.fr>
+FROM alpine
 
-RUN apt update && apt install -y python3-pip
-RUN pip3 install pynetbox netaddr
+RUN apk add --no-cache python3
+RUN pip3 install --no-cache --upgrade pip
+RUN pip3 install --no-cache --upgrade pynetbox netaddr
+
 COPY netbox-prometheus-sd.py /bin/netbox-prometheus-sd
 RUN chmod +x /bin/netbox-prometheus-sd
 RUN mkdir /output
 
-CMD while true; do (/bin/netbox-prometheus-sd "$NETBOX_URL" "$NETBOX_TOKEN" "/output/${OUTPUT_FILE-netbox.json}"; sleep $INTERVAL); done
+CMD while true; do (/bin/netbox-prometheus-sd "$NETBOX_URL" "$NETBOX_TOKEN" "/output/${OUTPUT_FILE-netbox.json}" -f "${CUSTOM_FIELD-prom_labels}" -p "${PORT-10000}}"; sleep "$INTERVAL"); done

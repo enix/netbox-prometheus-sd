@@ -62,3 +62,9 @@ service discovery:
   - files:
     - '/path/to/my/output.json'
 ```
+
+# Changes by shdxiang
+
+1. Use `alpine`;
+
+2. Supports environment variable: `CUSTOM_FIELD`, `PORT`.
