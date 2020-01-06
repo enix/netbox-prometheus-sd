@@ -178,7 +178,7 @@ class Discovery(object):
 
 def main():
     format = "%(asctime)s %(filename)s [%(lineno)d][%(levelname)s] %(message)s"
-    logging.basicConfig(level=logging.DEBUG, format=format)
+    logging.basicConfig(level=logging.INFO, format=format)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', default=10000,
