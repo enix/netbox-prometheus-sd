@@ -8,4 +8,4 @@ COPY netbox-prometheus-sd.py /bin/netbox-prometheus-sd
 RUN chmod +x /bin/netbox-prometheus-sd
 RUN mkdir /output
 
-CMD while true; do (/bin/netbox-prometheus-sd "$NETBOX_URL" "$NETBOX_TOKEN" "/output/${OUTPUT_FILE-netbox.json}" -f "${CUSTOM_FIELD-prom_labels}" -p "${PORT-10000}}"; sleep "$INTERVAL"); done
+CMD while true; do (/bin/netbox-prometheus-sd "$NETBOX_URL" "$NETBOX_TOKEN" "/output/${OUTPUT_FILE-netbox.json}" -d "${DISCOVERY_TYPE-device}" -f "${CUSTOM_FIELD-prom_labels}" -p "${PORT-10000}}"; sleep "$INTERVAL"); done
